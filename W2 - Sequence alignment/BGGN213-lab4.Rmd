@@ -1,0 +1,154 @@
+---
+title: "BGGN213-lab4"
+author: "Lisanne Stouthart"
+date: "2024-10-08"
+output: html_document
+---
+
+## Lecture
+```{r}
+x <- 1:5
+x + 100
+y <- c(100,1)
+y
+x + y
+```
+
+## Start
+```{r}
+source("http://thegrantlab.org/misc/cdc.R")
+
+cdc
+view(cdc)
+
+head(cdc$height)
+tail(cdc$height)
+```
+
+## Q1
+How would you “argue” with the tail() function to print out the last 20 weight
+values? Provide your code below:
+```{r}
+last_20_weights <- tail(cdc$weight, 20)
+print(last_20_weights)
+```
+
+## Q2
+Make a scatterplot of height vs weight using the plot() function. Add the code you
+used to generate this plot here:
+```{r}
+plot(cdc$weight, cdc$height,
+     main = "Scatterplot of Height vs Weight",
+     xlab = "Height (inches)",
+     ylab = "Weight (pounds)",
+     pch = 1,
+     col = "black")
+```
+
+## Q3 + Q4
+Do height and weight appear to be associated? If so are they positively associated
+or negatively associated? What is the Pearson correlation value for height and weight?
+
+A correlation close to +1 indicates a strong positive association.
+A correlation close to -1 indicates a strong negative association.
+A correlation around 0 suggests little to no linear association.
+
+A correlation coefficient of 0.1 is thought to represent a weak or small association; 
+a correlation coefficient of 0.3 is considered a moderate correlation; 
+and a correlation coefficient of 0.5 or larger is thought to represent a strong or large correlation.
+```{r}
+# Calculate the correlation coefficient
+correlation <- cor(cdc$weight, cdc$height, use = "complete.obs")
+print(correlation)
+# value = 0.5553222 -> so little to no linear association.
+```
+
+## Interim
+```{r}
+hist(cdc$weight)
+hist(cdc$height)
+height_m <- cdc$height * 0.0254
+```
+
+## Q5
+Create a new object weight_kg that records weight in kilograms. Provide your code
+below:
+```{r}
+weight_kg <- cdc$weight * .454
+head(weight_kg)
+```
+
+## Q6
+Create a new object bmi and make a plot of height vs BMI. Provide your code below
+and comment on whether height and BMI seem to be associated?
+```{r}
+bmi <- (weight_kg) / (height_m^2)
+
+plot(cdc$height, bmi,
+     main = "Scatterplot of Height vs BMI",
+     xlab = "Height (inches)",
+     ylab = "BMI",
+     pch = 1,  
+     col = "black") 
+```
+
+## Q7
+Are height and BMI strongly associated? What are their correlation value?
+```{r}
+correlation <- cor(cdc$height, bmi, use = "complete.obs")
+print(correlation)
+#Correlation = 0.03251694 -> so no correlation
+```
+
+## Q8
+Can you use this summing of a logical vector approach to find out how many obese
+individuals there are in the dataset? Provide your code and answer below:
+```{r}
+head(bmi >= 30, 100)
+eg <- c(TRUE, TRUE, FALSE, FALSE)
+sum(eg)
+
+num_obese <- sum(bmi >= 30)
+print(num_obese) #answer = 3897
+
+sum(bmi >= 30)/length(bmi)
+(sum(bmi >= 30)/length(bmi)) * 100
+round( (sum(bmi >= 30)/length(bmi)) * 100, 1)
+```
+
+## Q9
+Use bracket notation to make a scatterplot of height and weight for the first 100
+respondents. Provide your code below.
+```{r}
+cdc[567, 6] #answer = 160
+cdc[1:10, 6]
+cdc[1:10, ]
+
+plot(cdc$weight[1:100], cdc$height[1:100],
+     main = "Scatterplot of Height vs Weight (First 100 Respondents)",
+     xlab = "Weight (lbs)",
+     ylab = "Height (inches)",
+     pch = 1,  
+     col = "black") 
+
+#all working
+#cdc[1:100, ]$height
+#cdc[1:100, "height"]
+#cdc[1:100, 5]
+
+```
+
+## Q10
+How many obese individuals are male in the full dataset? Give your code and
+answer below:
+```{r}
+obese_logical <- bmi >= 30
+unique(cdc$gender)
+num_obese_males <- sum(obese_logical & (cdc$gender == "m"))
+print(num_obese_males) #n = 1961
+
+```
+
+
+
+

@@ -1,0 +1,245 @@
+---
+title: "Class 7 BGGN213"
+author: "Lisanne Stouthart (PID A69036187)"
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Class - Machine Learning 1
+Before we get into clustering methods let's make some sample data to cluster where we know what the answer should be.
+
+To help with this I will use the 'rnorm()' function.
+
+dnorm(x, mean = 0, sd = 1, log = FALSE)
+pnorm(q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+qnorm(p, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+rnorm(n, mean = 0, sd = 1)
+```{r}
+# rnorm()
+# it has 3 arguments, where 2 out of the 3 arguments are fixed numbers.
+
+rnorm(5)
+rnorm(15)
+
+hist(rnorm(150000))
+
+hist(rnorm(150000, mean=3))
+hist(rnorm(150000, mean=-3))
+
+n = 10000
+hist(c(rnorm(n, mean=3), rnorm(n, mean=-3)))
+
+```
+
+```{r}
+n = 30
+c(rnorm(n, mean=3), rnorm(n, mean=-3))
+
+x <- c(rnorm(n, mean=3), rnorm(n, mean=-3))
+x
+
+y <- rev(x)
+y
+
+z <- cbind(x,y)
+z
+
+# z <- rbind(x,y)
+# z
+
+plot(z)
+```
+
+## K-means clustering
+The function in base R (meaning that you dont have to install this) for k-means clustering is called 'kmeans()'.
+
+Perform k-means clustering on a data matrix.
+kmeans(x, centers, iter.max = 10, nstart = 1,
+       algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
+                     "MacQueen"), trace = FALSE)
+
+```{r}
+km <- kmeans(z, center = 2)
+# is 30,30 because we set 30 points each dataset
+# he has slightly different answers but that is because it is random
+km
+
+km$centers
+km$cluster
+```
+
+# Make color plot with clustering result and add cluster centers
+```{r}
+plot(z, col = "red")
+
+plot(z, col=c("red", "blue"))
+#this is random assigning of the blue and red, alternating
+
+plot(z, col = 3) #green, color by number
+
+plot(z, col=c(1,2)) #green, color by number, random again
+
+plot(z, col=km$cluster) #plot with clustering result
+
+plot(z, col=km$cluster) + 
+points(km$centers, col="blue") #plot with clustering result and center result
+
+plot(z, col=km$cluster) + 
+points(km$centers, col="blue", pch=16, cex=3) #to make center bit bigger
+# if you play with number of pch, you can change the shape
+# if you play with number of cex, you can change the size
+```
+
+# Can you cluster our data in 'z' into four clusters please?
+```{r}
+km4 <- kmeans(z, center = 4)
+plot(z, col=km4$cluster) +
+  points(km4$centers, col="blue", pch=16, cex=3)
+
+
+km5 <- kmeans(z, center = 5)
+plot(z, col=km5$cluster) +
+  points(km5$centers, col="blue", pch=15, cex=2)
+```
+
+# Hierarchical Clustering
+Hierarchical cluster analysis on a set of dissimilarities and methods for analyzing it. hclust(d, method = "complete", members = NULL)
+
+The main function for hierarchical clutering in base R is called 'hclust()'.
+Unlike 'kmeans()' I can not just pass in my data as input I first need a distance matrix from my data.
+```{r}
+d <-dist(z)
+hc <- hclust(d)
+hc # this is not really helpful
+```
+
+There is a specific hclust plot() method ...
+```{r}
+plot(hc) +
+abline(h=10, col= "red")
+```
+
+To get my main clustering result (i.e. the membership vector). I can "cut" my tree at a give height. To do this I will use the 'cutree()'
+```{r}
+grps <- cutree(hc, h=10)
+grps
+
+plot(z, col=grps) #so 2 different ways to get the custering
+```
+
+# Principal Component Analysis
+Principal component analysis (PCA) is a well established "multivariate statistical technique" used to reduce the dimensionality of a complex data set to a more manageable number (typically 2D or 3D). This method is particularly useful for highlighting strong paterns and relationships in large datasets (i.e. revealing major similarities and diferences) that are otherwise hard to visualize. As we will see again and again in this course PCA is often used to make all sorts of bioinformatics data easy to explore and visualize. 
+
+## PCA of UK food data
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url, row.names=1)
+x
+
+```
+
+Q1: How many rows and columns are in your new data frame named x? What R functions could you use to answer this questions?
+```{r}
+## Complete the following code to find out how many rows and columns are in x?
+nrow(x) #answer = 17 rows
+ncol(x) #answer = 5 columns
+dim(x) #both combined
+
+## Preview the first 6 rows
+head(x)
+
+# Note how the minus indexing works
+rownames(x) <- x[,1]
+x <- x[,-1]
+head(x)
+
+# Check dimensions again
+dim(x) # answer is 17  4
+
+x <- read.csv(url, row.names=1)
+head(x)
+```
+
+Q2: Which approach to solving the ‘row-names problem’ mentioned above do you prefer and why? Is one approach more robust than another under certain circumstances?
+```{r}
+# x <- read.csv(url, row.names=1)
+# This is safe
+```
+
+Q3: Changing what optional argument in the above barplot() function results in the following plot?
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+barplot(as.matrix(x), beside=F, col=rainbow(nrow(x))) #answer is change to F
+```
+
+Q5: Generating all pairwise plots may help somewhat. Can you make sense of the following code and resulting figure? What does it mean if a given point lies on the diagonal for a given plot?
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+# It always compares two countries. Column 2, row 1, compares england with wales.
+# If it is not on the line, it is different between the countries. If the point is on the diagonal line, it is similar between the 2 countries.
+```
+
+Q6. What is the main differences between N. Ireland and the other countries of the UK in terms of this data-set?
+```{r}
+
+```
+
+
+## PCA to the rescue
+The main function to do PCA in base R is called 'prcomp()'.
+```{r}
+# Use the prcomp() PCA function 
+pca <- prcomp( t(x) )
+summary(pca)
+```
+Let's see what is inside our result object 'pca' that we just calculated:
+```{r}
+attributes(pca)
+```
+
+Q7. Complete the code below to generate a plot of PC1 vs PC2. The second line adds text labels over the data points.
+```{r}
+pca$x #if you want to data
+
+# To make our main result figure, called a "PC plot" (or "score plot", or "ordination plot" or "PC1 vs PC2 plot").
+
+# Plot PC1 vs PC2
+plot(pca$x[,1], pca$x[,2], 
+     col=c("black", "red", "blue", "darkgreen"), 
+     pch=16,
+     xlab="PC1 (67.4%)", ylab="PC2 (29%)",
+      xlim=c(-300,600)) +
+abline(h=0, col="gray", lty=2) +
+abline(v=0, col="gray", lty=2) +
+text(pca$x[,1]+70, pca$x[,2], colnames(x),
+     col=c("black", "red", "blue", "darkgreen"))
+
+       
+```
+
+Q8. Customize your plot so that the colors of the country names match the colors in our UK and Ireland map and table at start of this document.
+```{r}
+# Plot PC1 vs PC2
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500), col=c("black", "red", "blue", "darkgreen"), pch=16)
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+
+Q9: Generate a similar ‘loadings plot’ for PC2. What two food groups feature prominantely and what does PC2 maninly tell us about?
+```{r}
+pca$rotation
+
+## Lets focus on PC1 as it accounts for > 90% of variance 
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+
+## PCA of RNA-seq data
+Q10: How many genes and samples are in this data set?
+```{r}
+
+```
+
+

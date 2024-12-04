@@ -1,0 +1,193 @@
+---
+title: "Class6: BGGN"
+author: "Lisanne Stouthart PID A69036187"
+format: html
+---
+
+## Quarto
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+My first function
+```{r}
+add <- function(x, y) {
+  x + y
+  }
+```
+
+Can I just use it?
+```{r}
+add(1,1)
+
+add(x=1, y=100)
+
+add(c(100,1,100),1)
+add(x=c(100,1,100), y=1)
+
+#add(10) #Missing argument Y
+```
+
+My second function.
+So if I next time don't give Y argument, it will still work
+```{r}
+add <- function(x, y=1) {
+  x + y
+  }
+```
+
+```{r}
+#add(10)
+#add(10,10) #you can still overwrite the y=1 of the original function
+
+#add(1,1,1)
+#add(1,1, z=1) #same error, you use an unused argument, you can modify your function
+```
+
+Let's write a function to generate a random nucleotide sequence of any length.
+```{r}
+bases <- c("A", "C", "T", "G")
+
+sample(bases, size = 2)
+#sample(bases, size = 5) #this gives error because you cannot take a sample larger then population, which in this case is 4.
+sample(bases, size = 100, replace = TRUE)
+sequence <- sample(bases, size = 100, replace = TRUE)
+```
+
+That is my wee working snipet now I can make it into a function
+```{r}
+generate_dna <- function(length) {
+  bases <- c("A", "C", "T", "G")
+  sequence <- sample(bases, size = length, replace = TRUE)
+  return(sequence) #to get your answer
+}
+```
+
+```{r}
+generate_dna(10)
+generate_dna(length = 10)
+```
+
+```{r}
+# Install the bio3d package
+#install.packages("bio3d")
+
+# Load the bio3d library
+#library(bio3d)
+
+# Check the version of the bio3d package
+#package_version("bio3d")
+
+bio3d::aa.table #all what we want is the 3 letter code
+bio3d::aa.table$aa1 #all what we want is the 3 letter code
+unique(bio3d::aa.table$aa1)[1:20]
+
+aa <- unique(bio3d::aa.table$aa1)[1:20]
+```
+
+Generate random protein sequence of length 6-13
+```{r}
+generate_protein <- function(length) {
+  aa <- unique(bio3d::aa.table$aa1)[1:20]
+  sequence <- sample(aa, size = length, replace = TRUE)
+  return(sequence) #to get your answer
+}
+```
+
+```{r}
+generate_protein(10)
+generate_protein(length = 10)
+generate_protein(6)
+generate_protein(7)
+```
+
+To get sequences one by one is boring. So generate random protein sequences of length 6 to 12
+```{r}
+#sapply(vector, function)
+sapply(6:12, generate_protein) #you can not easy paste this somewhere because of the ""
+
+
+paste(c("barry", "alice"), "loves R", sep = "-")
+paste(c("barry", "alice"), "loves R", sep = "")
+paste(c("barry", "alice"), "loves R")
+
+
+generate_protein <- function(length) {
+  aa <- unique(bio3d::aa.table$aa1)[1:20]
+  sequence <- sample(aa, size = length, replace = TRUE)
+  sequence <- paste(sequence, collapse = "")
+  return(sequence) #to get your answer
+}
+
+sapply(6:12, generate_protein)
+
+answer <- sapply(6:12, generate_protein)
+answer
+```
+
+FASTA formatting
+```{r}
+paste(">id.",6:12) #we don't want spaces
+paste(">id.",6:12, sep = "") 
+
+paste(">id.",6:12, answer, sep = "") #but now we want everything on new line
+
+paste(">id.", 6:12, "\n", answer, sep = "")
+cat(paste(">id.", 6:12, "\n", answer, sep = "")) #but we want to look like fasta
+
+cat(paste(">id.", 6:12, "\n", answer, sep = ""), sep="\n")
+```
+
+## HOMEWORK:
+```{r}
+# How would you generalize the original code above to work with any set of input protein structures?
+library(bio3d)
+bio3d::aa.table
+
+b_factors_for_pdb <- function(pdb_id, chain = "A", elety = "CA") {
+  # Read and trim the PDB file
+  chain_data <- trim.pdb(read.pdb(pdb_id), chain = chain, elety = elety)
+  # Extract B-factors
+  extractB <- chain_data$atom$b
+  # Plot B-factors
+  plotb3(extractB, sse = chain_data, typ = "l", ylab = "B-factor",
+         main = paste("B-factors for PDB", pdb_id))
+}
+
+b_factors_for_pdb("4AKE")
+b_factors_for_pdb("1AKE")
+b_factors_for_pdb("1E4Y")
+
+#Or make it all in 1 line
+sapply(c("4AKE", "1AKE", "1E4Y"), b_factors_for_pdb)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
