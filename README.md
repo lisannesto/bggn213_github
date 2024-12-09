@@ -2,7 +2,7 @@
 My class work from [BGGN213](https://bioboot.github.io/bggn213_F24/) at 
 UC San Diego.
 
-- Class 1: [Intro to Bioinformatics](/~Documents/A PhD/Courses/A BGGN213 - Bioinformatics (Fall)/bggn213_github)
+- Class 1: [Intro to Bioinformatics](https://github.com/lisannesto/bggn213_github/tree/main/W1%20-%20Intro%20bioinformatics)
 - Class 2: [Sequence Alignment Fundamentals]()
 - Class 3: [Advanced sequence alignment and database searching]()
 - Class 4: [Bioinformatics data analysis with R]()
