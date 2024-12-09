@@ -1,0 +1,271 @@
+---
+title: "BGGN213_Class15"
+author: "Lisanne Stouthart (PID A69036187)"
+format: html
+---
+
+## Information
+Barry told me that uploading the class lab is enough to get the points. 
+Let me know if you need something else to get the full points.
+
+## Mini project
+Pertusses, a.k.a. Whoops Caugh, is a highly contagous lung unfection caused by the *B. Pertussis*.
+
+The CDC tracks Pertussis case numbers and they can be accessed [here](https://www.cdc.gov/pertussis/php/surveillance/pertussis-cases-by-year.html?CDC_AAref_Val=https://www.cdc.gov/pertussis/surv-reporting/cases-by-year.html)
+
+We need to "scrape" this data so we do stuff with it in R. Let's try the **datapasta** package to do this.
+
+```{r}
+# install.packages("datapasta") - do this in console
+library(datapasta)
+
+#this package works a bit different. You copy the data that you want including the headers. Then you click Addins (it is on the top on the same lane as the save button). 
+
+cdc <- data.frame(
+                                 year = c(1922L,1923L,1924L,1925L,
+                                          1926L,1927L,1928L,1929L,1930L,1931L,
+                                          1932L,1933L,1934L,1935L,1936L,
+                                          1937L,1938L,1939L,1940L,1941L,1942L,
+                                          1943L,1944L,1945L,1946L,1947L,
+                                          1948L,1949L,1950L,1951L,1952L,
+                                          1953L,1954L,1955L,1956L,1957L,1958L,
+                                          1959L,1960L,1961L,1962L,1963L,
+                                          1964L,1965L,1966L,1967L,1968L,1969L,
+                                          1970L,1971L,1972L,1973L,1974L,
+                                          1975L,1976L,1977L,1978L,1979L,1980L,
+                                          1981L,1982L,1983L,1984L,1985L,
+                                          1986L,1987L,1988L,1989L,1990L,
+                                          1991L,1992L,1993L,1994L,1995L,1996L,
+                                          1997L,1998L,1999L,2000L,2001L,
+                                          2002L,2003L,2004L,2005L,2006L,2007L,
+                                          2008L,2009L,2010L,2011L,2012L,
+                                          2013L,2014L,2015L,2016L,2017L,2018L,
+                                          2019L,2020L,2021L,2022L,2024L),
+                                cases = c(107473,164191,165418,152003,
+                                          202210,181411,161799,197371,
+                                          166914,172559,215343,179135,265269,
+                                          180518,147237,214652,227319,103188,
+                                          183866,222202,191383,191890,109873,
+                                          133792,109860,156517,74715,69479,
+                                          120718,68687,45030,37129,60886,
+                                          62786,31732,28295,32148,40005,
+                                          14809,11468,17749,17135,13005,6799,
+                                          7717,9718,4810,3285,4249,3036,
+                                          3287,1759,2402,1738,1010,2177,2063,
+                                          1623,1730,1248,1895,2463,2276,
+                                          3589,4195,2823,3450,4157,4570,
+                                          2719,4083,6586,4617,5137,7796,6564,
+                                          7405,7298,7867,7580,9771,11647,
+                                          25827,25616,15632,10454,13278,
+                                          16858,27550,18719,48277,28639,32971,
+                                          20762,17972,18975,15609,18617,
+                                          6124,2116,3044,23544)
+       )
+
+head(cdc)
+```
+
+Make a ggplot (x = year, y = cases)
+```{r}
+library(ggplot2)
+
+baseplot <- ggplot(cdc) +
+  aes(x = year, y = cases) +
+  geom_point() +
+  geom_line()
+
+baseplot #so you can easily add more layers
+
+baseplot +
+  theme_bw()
+```
+
+Using the ggplot geom_vline() function add lines to your previous plot for the 1946 introduction of the wP vaccine and the 1996 switch to aP vaccine (see example in the hint below). What do you notice?
+```{r}
+baseplot +
+  theme_bw() +
+  geom_vline(xintercept = 1946, col="blue") +
+  geom_vline(xintercept = 1996, col="red") +
+  geom_vline(xintercept = 2022, col="green") +
+  geom_vline(xintercept = 2003, col="orange")
+
+#it is lower in 2022, because there was less social interaction, because of COVID.
+#2004, there was an outbreak in Disney California
+```
+
+## CMI-PB (Computational Models of Immunity - Pertussis Boost)
+Website [here](https://www.cmi-pb.org/)
+Click on: access data -> data composition
+
+This project collects and makes freely available data about the immune response to Pertussis vaccination.
+
+You can access the data via an API which returns JSON format (key: =vale pairs).
+
+We can use the **Jsonlite** package and it's `read_json()` function.
+```{r}
+# install.packages("jsonlite") -> dont do this in here, but do it in console 
+library(jsonlite)
+
+subject <- read_json("https://www.cmi-pb.org/api/subject", simplifyVector = TRUE) 
+```
+
+Let's have a wee peak and explore of this
+```{r}
+head(subject)
+```
+
+How many subjects do we have?
+How many wP and aP do we have?
+```{r}
+nrow(subject)
+
+table(subject$infancy_vac)
+```
+
+How many male/female do we have?
+```{r}
+table(subject$biological_sex)
+```
+
+What is the breakdown of race and biological sex (e.g. number of Asian females, White males etc…)?
+```{r}
+table(subject$race, subject$biological_sex)
+```
+
+Does this break down reflect the US population?
+```{r}
+# no
+```
+
+```{r}
+table(subject$dataset)
+```
+
+```{r}
+specimen <- read_json("https://www.cmi-pb.org/api/v5/specimen", simplifyVector = TRUE) 
+ab_titer <- read_json("https://www.cmi-pb.org/api/v5/plasma_ab_titer", simplifyVector = TRUE) 
+
+head(specimen)
+head(ab_titer)
+
+```
+
+We want to merge or "join" these tables, so we can have all the info we need about a give antibody measurement.
+```{r}
+library("dplyr")
+
+meta <- inner_join(subject, specimen)
+head(meta)
+
+abdata <- inner_join(ab_titer, meta)
+head(abdata)
+
+nrow(abdata) #52576 big, a lot of antibody measurements
+
+table(abdata$isotype)
+table(abdata$antigen)
+```
+
+Let's begin with IgG (look at this specific isotype)
+```{r}
+igg <- filter(abdata, isotype=="IgG")
+head(igg)
+
+#check if it is correct
+table(igg$isotype)
+nrow(igg)
+```
+
+Make a boxplot of IgG antigen levels - this will be a plot of MFI_normalized vs antigen.
+```{r}
+library(ggplot2)
+
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen) +
+  geom_boxplot()
+```
+
+Colour it by aP and wP
+```{r}
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen, col=infancy_vac) +
+  geom_boxplot()
+
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen, col=infancy_vac) +
+  geom_boxplot() +
+  scale_x_log10()
+```
+
+Ideally I would like to see how these Ab levels change over time relative to the booster shot.
+```{r}
+table(abdata$visit)
+```
+
+Try facet-wrap, to split the graphs. Here are different graphs.
+```{r}
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen, col=infancy_vac) +
+  geom_boxplot() +
+  facet_wrap(~infancy_vac)
+
+# log variant
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen, col=infancy_vac) +
+  geom_boxplot() +
+  scale_x_log10() +
+  facet_wrap(~infancy_vac)
+
+# facet by visit
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen) +
+  geom_boxplot() +
+  facet_wrap(~visit)
+
+# facet by visit, with col
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen, col=infancy_vac) +
+  geom_boxplot() +
+  facet_wrap(~visit)
+
+# facet by visit, with col and log
+ggplot(igg) +
+  aes(x = MFI_normalised, y = antigen, col=infancy_vac) +
+  geom_boxplot() +
+  scale_x_log10() +
+  facet_wrap(~visit)
+```
+
+Lets look at the 2021 dataset IgG PT antigen levels time-course
+```{r}
+library(ggplot2)
+
+#first get the 2021 data filtered out
+abdata_2021 <- abdata %>% filter(dataset == "2021_dataset")
+head(abdata_2021)
+
+#second get the IgG data filtered out
+abdata_2021_igg <- abdata_2021 %>% filter(isotype == "IgG")
+head(abdata_2021_igg)
+nrow(abdata_2021_igg)
+
+#third get the PT data filtered out
+abdata_2021_igg_pt <- abdata_2021_igg %>% filter(antigen == "PT")
+head(abdata_2021_igg_pt)
+nrow(abdata_2021_igg_pt)
+
+#fourth make the graph
+ggplot(abdata_2021_igg_pt) +
+  aes(x = planned_day_relative_to_boost, y = MFI_normalised, col=infancy_vac, group=subject_id) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = 0, col="orange", linetype="dashed") +
+  geom_vline(xintercept = 14, col="orange", linetype="dashed") +
+  geom_smooth(aes(group=NULL), se=F) +
+  labs(title="2021 dataset IgG PT",
+       subtitle = "Dashed lines indicate day 0 (pre-boost) and 14 (apparent peak levels)")
+```
+
+
+
+

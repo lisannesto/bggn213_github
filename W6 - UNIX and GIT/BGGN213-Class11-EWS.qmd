@@ -1,0 +1,58 @@
+---
+title: "BGGN213-Class11"
+author: "Lisanne Stouthart (PID A69036187)"
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Question 13
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+
+nrow(expr) #462
+table(expr$geno) #A/A = 108, A/G = 233, G/G = 121
+
+str(expr)
+
+
+# Check the column names to ensure the data is correct
+names(expr) #sample, geno, exp
+
+median_expression <- tapply(expr$exp, expr$geno, median)
+print(median_expression)
+```
+
+
+## Question 14
+```{r}
+library(ggplot2)
+
+# lets make a boxplot
+ggplot(expr) + aes(x=geno, y=geno) +
+  geom_boxplot()
+
+# lets try something different
+ggplot(expr) + aes(x=geno, y=exp) +
+  geom_boxplot()
+
+# lets try something different
+ggplot(expr) + aes(x=geno, y=exp, col=geno) +
+  geom_boxplot()
+
+# lets try something different
+ggplot(expr) + aes(x=geno, y=exp, fill=geno) +
+  geom_boxplot()
+
+# lets try something different
+ggplot(expr) + aes(x=geno, y=exp, fill=geno) +
+  geom_boxplot(notch=TRUE)
+
+# conclusion; having a G/G really results in a low expression of this gene.
+# expression level of ORMDL3 decreases as you go from A/A to G/G.
+# The SNP appears to have an effect on the expression of ORMDL3.
+```
+

@@ -1,0 +1,223 @@
+---
+title: "BGGN213-Class14_EWS"
+author: "Lisanne Stouthart PID (A69036187)"
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Information
+Barry told me that uploading the class lab is enough to get the points. Let me know if you need something else to get the full points.
+
+## Section 1. Differential Expression Analysis:
+```{r}
+library(DESeq2)
+
+metaFile <- "~/Downloads/GSE37704_metadata.csv"
+countFile <- "~/Downloads/GSE37704_featurecounts.csv"
+
+# Import metadata and take a peak
+colData <- read.csv(metaFile, row.names = 1)
+head(colData)
+
+# Import countdata
+countData = read.csv(countFile, row.names=1)
+head(countData)
+
+# Note we need to remove the odd first $length col
+countData <- as.matrix(countData[,-1])
+head(countData)
+
+# Filter count data where you have 0 read count across all samples.
+countData = countData[rowSums(countData) > 0, ]
+head(countData)
+```
+
+# Running DESeq2
+```{r}
+dds = DESeqDataSetFromMatrix(countData=countData,
+                             colData=colData,
+                             design=~condition)
+dds = DESeq(dds)
+dds
+
+res = results(dds)
+
+summary(res)
+
+plot( res$log2FoldChange, -log(res$padj) )
+
+# Make a color vector for all genes
+mycols <- rep("gray", nrow(res))  # Default color is gray
+
+# Color red the genes with absolute fold change above 2
+mycols[abs(res$log2FoldChange) > 2] <- "red"
+
+# Color blue those with adjusted p-value less than 0.01 and absolute fold change more than 2
+inds <- (res$padj < 0.01) & (abs(res$log2FoldChange) > 2)
+mycols[inds] <- "blue"
+
+# Create a volcano plot
+plot(res$log2FoldChange, -log10(res$padj), col=mycols, 
+     xlab="Log2(FoldChange)", ylab="-Log(P-value)", 
+     pch=20, main="Volcano Plot")
+```
+
+# Adding gene annotation
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+
+columns(org.Hs.eg.db)
+
+# Annotate with SYMBOL (Gene symbol)
+res$symbol <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res),  
+                     keytype="ENSEMBL",     
+                     column="SYMBOL",      
+                     multiVals="first")     
+
+# Annotate with ENTREZID (Entrez ID)
+res$entrez <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res),  
+                     keytype="ENSEMBL",    
+                     column="ENTREZID",    
+                     multiVals="first")     
+
+# Annotate with GENENAME (Gene name)
+res$name <- mapIds(org.Hs.eg.db,
+                   keys=row.names(res),  
+                   keytype="ENSEMBL",    
+                   column="GENENAME",    
+                   multiVals="first")     
+
+head(res, 10)
+
+res = res[order(res$pvalue),]
+write.csv(res, file="deseq_results.csv")
+
+```
+
+# Section 2. Pathway Analysis
+# Kegg Pathway
+```{r}
+# Run in your R console (i.e. not your Rmarkdown doc!)
+# BiocManager::install( c("pathview", "gage", "gageData") )
+
+# For old vesrsions of R only (R < 3.5.0)!
+#source("http://bioconductor.org/biocLite.R")
+#biocLite( c("pathview", "gage", "gageData") )
+
+library(pathview)
+library(gage)
+library(gageData)
+
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+
+# Focus on signaling and metabolic pathways only
+kegg.sets.hs = kegg.sets.hs[sigmet.idx.hs]
+
+# Examine the first 3 pathways
+head(kegg.sets.hs, 3)
+
+foldchanges = res$log2FoldChange
+names(foldchanges) = res$entrez
+head(foldchanges)
+
+# Get the results
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+
+attributes(keggres)
+
+```
+
+```{r}
+# Look at the first few down (less) pathways
+head(keggres$less)
+
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+
+# A different PDF based output of the same data
+pathview(gene.data=foldchanges, pathway.id="hsa04110", kegg.native=FALSE)
+```
+
+# Top upregulated
+``` {r}
+## Focus on top 5 upregulated pathways here for demo purposes only
+keggrespathways <- rownames(keggres$greater)[1:5]
+
+# Extract the 8 character long IDs part of each string
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+Insert figure
+![](hsa04640.pathview.png)
+
+Insert figure
+![](hsa04330.pathview.png)
+
+
+# Top downregulated
+```{r}
+## Focus on top 5 downregulated pathways here for demo purposes only
+keggrespathways <- rownames(keggres$less)[1:5]
+
+# Extract the 8 character long IDs part of each string
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+Insert figure
+![](hsa04114.pathview.png)
+
+Insert figure
+![](hsa04110.pathview.png)
+
+# Section 3, Gene Ontology
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Focus on Biological Process subset of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+head(gobpres$less)
+
+lapply(gobpres, head)
+```
+
+# Section 4. Reactome Analysis
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), "symbol"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+
+head(sig_genes)
+
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+Then, to perform pathway analysis online go to the Reactome website (https://reactome.org/PathwayBrowser/#TOOL=AT). Select “choose file” to upload your significant gene list. Then, select the parameters “Project to Humans”, then click “Analyze”.
+
+Q: What pathway has the most significant “Entities p-value”? Do the most significant pathways listed match your previous KEGG results? What factors could cause differences between the two methods?
+```{r}
+# Cell Cycle
+```
+
+# Section 5. GO online (optional)
+To perform Gene Set GO Enrichment online go to the website http://www.geneontology.org/page/go-enrichment-analysis. Paste your significant gene list from section 4. Then, select "biological process" and "homo sapiens", and click submit.
+
+Q: What pathway has the most significant “Entities p-value”? Do the most significant pathways listed match your previous KEGG results? What factors could cause differences between the two methods?
+```{r}
+# negative regulation of glycogen biosynthetic process
+```
+

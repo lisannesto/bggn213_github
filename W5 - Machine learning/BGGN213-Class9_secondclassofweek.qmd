@@ -1,0 +1,287 @@
+---
+title: "Class10,11_bggn13"
+author: "Lisanne Stouthart (PID A69036187)"
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Barry told us uploading the class lecture is sufficient for class 11. In the class we learned the google document (ipynb) of alpha fold and we discussed the obtained figures. Please let me know if I need to provide more information to have a good submission.
+
+# PDB Intro
+```{r}
+# Go to PDB
+# Enter 1IEP
+# Click on structure
+# Display Files - PDB Format
+# Search for atom, this data is used for the viewer of protein structure
+# Meaning we dont have information for the first 224 residus.
+```
+
+# Little exercise
+```{r}
+# Download a CSV file from the PDB site (accessible from “Analyze” > “PDB Statistics” > “by Experimental Method and Molecular Type”.
+
+# Save your input data file into your Project directory
+pdbstat <- "~/Downloads/data_export_summary.csv"
+pdbstats <- read.csv(pdbstat, row.names=1)
+head(pdbstats)
+
+x <- pdbstats$Total
+x
+
+#as.numeric(x) #Warning: NAs introduced by coercion, the comma's are messing this up
+
+gsub(',', '', x)
+```
+
+```{r}
+convert_comma_numbers <- function(x) {
+  #remove comma
+  x <- gsub(',', '', x)
+  #convert to numeric
+  x <- as.numeric(x)
+  
+  return(x)
+}
+```
+
+```{r}
+convert_comma_numbers(pdbstats$Total)
+```
+
+The 'apply()' function is very useful as it can take any function and "apply" it over either the ROWS or COLs of a data.frame
+```{r}
+n.tot <- sum(convert_comma_numbers(pdbstats$Total))
+n.tot
+
+195866 / 248838887 * 100
+
+colSums(apply(pdbstats, 2, convert_comma_numbers))/n.tot
+```
+
+# Q1 - What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+```{r}
+n.xray <- sum(convert_comma_numbers(pdbstats$X.ray))
+n.em <- sum(convert_comma_numbers(pdbstats$EM))
+
+n.xray/n.tot * 100
+n.em/n.tot * 100
+```
+
+# Q2 - What proportion of structures in the PDB are protein?
+```{r}
+protein <- (n.xray+n.em)/n.tot * 100
+protein
+```
+
+# Q3 - Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+```{r}
+# Typing in "HIV-1 protease" gives 25,309 structures. This seems a bit much.
+```
+
+# Visualizing the HIV-1 protease structure
+```{r}
+# open Molstar (https://molstar.org/viewer/)
+# 1HSG open -> apply
+# Save your input data file into your Project directory
+# Copy Paste it in the right folder
+
+library(bio3d)
+hsg_try <- read.pdb("~/Downloads/1hsg.pdb")
+print(hsg_try)
+
+summary(hsg_try)
+
+# Extract water molecules
+water_indices <- which(hsg_try$atom$resid == "HOH" | hsg_try$atom$resid == "WAT")
+water_molecules <- hsg_try$atom[water_indices, ]
+
+# View water molecules
+print(water_molecules)
+
+# Print the number of water molecules
+cat("Total number of water molecules:", nrow(water_molecules), "\n")
+#127 water molecules
+```
+# Using Mol*
+![My first image from Mol-star](1HSG.png)
+
+# Another Cool image
+![image 2](1HSG-1.png)
+# Another Cool image
+![image 3](1HSG-2.png)
+The dot above is the water molecule. 
+
+# Another Cool image
+![image 3](1HSG-3.png)
+
+# Another Cool image
+![image 3](1HSG-4.png)
+
+# Another Cool image
+![image 3](1HSG.png)
+
+# Q4 - Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+```{r}
+#H atom is on the beginning and it is very tiny. It is too small to see at this resolution.
+```
+
+# Q5 - There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have
+```{r}
+# The watermolecule sits in the binding site.
+# Turn the water off, so that it is not visible.
+```
+
+# Q6 - Generate and save a figure clearly showing the two distinct chains of HIV-protease along with the ligand. You might also consider showing the catalytic residues ASP 25 in each chain and the critical water (we recommend “Ball & Stick” for these side-chains). Add this figure to your Quarto document. Discussion Topic: Can you think of a way in which indinavir, or even larger ligands and substrates, could enter the binding site?
+```{r}
+# See previous uploaded
+```
+
+# Q7 - [Optional] As you have hopefully observed HIV protease is a homodimer (i.e. it is composed of two identical chains). With the aid of the graphic display can you identify secondary structure elements that are likely to only form in the dimer rather than the monomer?
+```{r}
+# Optional
+```
+
+# Interim
+```{r}
+#Bio3D package for structural bioinformatics
+library(bio3d)
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+# Interim 2
+```{r}
+attributes(pdb)
+head(pdb$atom)
+pdbseq(pdb)
+
+pdbseq(pdb)[25]
+```
+
+# Interim 3
+# Functional dynamics prediction
+Prediciting functional motions of a single 
+```{r}
+source("https://tinyurl.com/viewpdb")
+library(r3dmol)
+library(shiny)
+view.pdb(pdb, backgroundColor = "pink")
+```
+
+# Interim 4
+```{r}
+adk <- read.pdb("6s36")
+adk
+
+modes <- nma(adk)
+plot(modes)
+mktrj(modes, file='adk.pdb') #this is only A amino acids
+
+mktrj(modes, pdb=adk, file='adk.pdb')
+```
+
+# Q7 - How many amino acid residues are there in this pdb object? 
+```{r}
+length(pdbseq(pdb)) #answer = 198
+```
+
+# Q8 - Name one of the two non-protein residues? 
+```{r}
+#In the summary output of the pdb object, it shows that there are non-protein residues, including HOH (water) and MK1 (the ligand).
+```
+
+# Q9 - How many protein chains are in this structure? 
+```{r}
+# Number of unique protein chains
+num_chains <- length(unique(pdb$atom$chain))
+print(num_chains) #answer is 2
+```
+
+# Q10 - Which of the packages above is found only on BioConductor and not CRAN?
+```{r}
+#msa
+# not needed, no time in class
+```
+
+# Q11 - Which of the above packages is not found on BioConductor or CRAN?
+```{r}
+#bitbucket
+# not needed, no time in class
+```
+
+# Q12 - True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket?
+```{r}
+#True
+# not needed, no time in class
+```
+
+## Previous Class, finishing it up
+```{r}
+library(bio3d)
+
+id <- "1ake_A"
+aa <- get.seq(id)
+aa
+
+b <- blast.pdb(aa)
+b
+
+attributes(b)
+head(b$hit.tbl)
+
+hits <- plot(b) #it takes the blast results and shows a quick and dirty overview. Each dot is a result. Bitscore is the alignment score. It takes top 19 hits.
+
+attributes(hits) #you use attributes if you want an idea what is in the dataset.
+```
+
+Top hits that we like from our blast results:
+```{r}
+hits$pdb.id
+```
+
+
+```{r}
+#Download releated PDB files
+files <- get.pdb(hits$pdb.id, path = "pdbs", split = TRUE, gzip = TRUE)
+```
+
+I have now found and downloaded all ADK structures in the PDB database but viewing them is difficult as they need to be aligned and superpossed.
+
+I am going to install BiocManager package from CRAN. Then I can use 'BiocManager::install()' to install any bioconductor package.
+```{r}
+pdbs <- pdbaln(files, fit =TRUE, exefile = "msa")
+pdbs
+```
+
+## Principal Component Analysis
+```{r}
+pc <- pca(pdbs)
+plot(pc)
+```
+
+```{r}
+plot(pc, pc.axes = c(1:2))
+```
+To examine in more detail what PC1 (or any PC) is capturing here we can plot the loadings or make a wee movie (trajectory) of moving along PC1.
+```{r}
+mktrj(pc, pc=1, file="pc1.pdb")
+```
+
+
+# Q13 - How many amino acids are in this sequence, i.e. how long is this sequence?
+```{r}
+# 214
+```
+
+# Q14 - What do you note about this plot? Are the black and colored lines similar or different? Where do you think they differ most and why?
+```{r}
+# not needed, no time in class
+```
+
+
+
+
