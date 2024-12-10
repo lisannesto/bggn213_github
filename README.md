@@ -17,8 +17,3 @@ UC San Diego.
 - Class 13: [Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists](https://github.com/lisannesto/bggn213_github/tree/main/W7%20-%20Structural%20bioinformatics)
 - Class 14: [RNA-Seq mini project](https://github.com/lisannesto/bggn213_github/tree/main/W7%20-%20Structural%20bioinformatics)
 - Class 15: [Investigating pertussis resurgence mini project](https://github.com/lisannesto/bggn213_github/tree/main/W8%20-%20Genome%20informatics)
-- Class 16: [Essential UNIX for bioinformatics](https://github.com/lisannesto/bggn213_github/tree/main/W8%20-%20Genome%20informatics)
-- Class 17: [Analyzing sequencing data in the cloud]()
-- Class 18: [Thanksgiving holiday]()
-- Class 19: [Hands-on with Git and GitHub]()
-- Class 20: [Portfolio building and discussion of bioinformatics in industry]()
