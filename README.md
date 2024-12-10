@@ -7,7 +7,7 @@ UC San Diego.
 - Class 3: [Advanced sequence alignment and database searching](https://github.com/lisannesto/bggn213_github/tree/main/W2%20-%20Sequence%20alignment)
 - Class 4: [Bioinformatics data analysis with R](https://github.com/lisannesto/bggn213_github/tree/main/W2%20-%20Sequence%20alignment)
 - Class 5: [Data exploration and visualization in R](https://github.com/lisannesto/bggn213_github/tree/main/W3%20-%20Bioinformatics%20with%20R)
-- Class 6: [Why, when and how of writing your own R functions](https://github.com/lisannesto/bggn213_github/tree/main/W3%20-%20Bioinformatics%20with%20R)
+- Class 6: [Why, when and how of writing your own R functions](https://github.com/lisannesto/bggn213_github/blob/main/W3%20-%20Bioinformatics%20with%20R/class6bggninfo.md)
 - Class 7: [Introduction to machine learning for Bioinformatics 1](https://github.com/lisannesto/bggn213_github/tree/main/W4%20-%20Writing%20own%20R%20function)
 - Class 8: [Unsupervised learning mini-project](https://github.com/lisannesto/bggn213_github/tree/main/W4%20-%20Writing%20own%20R%20function)
 - Class 9: [Halloween Candy Mini-Project](https://github.com/lisannesto/bggn213_github/tree/main/W5%20-%20Machine%20learning)
